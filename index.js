@@ -32,6 +32,7 @@ let persons = [
 ]
 
 app.get('/info', (request, response) => {
+  console.log('info was requested')
   response.send(`<p>Phonebook has info for ${persons.length} people</p><p>${new Date().toJSON()}</p>`)
 })
 
@@ -85,6 +86,7 @@ app.use(unknownEndpoint)
 
 
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 80
 app.listen(PORT)
 console.log(`Server running on port ${PORT}`)
+console.log('I hope this works')
