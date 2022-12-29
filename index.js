@@ -55,7 +55,13 @@ app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     persons = persons.filter(p => p.id !== id)
     response.status(204).end()
+})
 
+app.put('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  const index = persons.findIndex(p => p.id === id)
+  persons[index].number = request.body.number
+  response.json(persons[index])
 })
 
 const generateId = () => {
@@ -76,8 +82,7 @@ app.post('/api/persons', (request, response) => {
     persons = persons.concat(newPerson)
     response.status(200).json(newPerson)
   }
-}
-)
+})
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({error: 'unknown endpoint'})
@@ -87,7 +92,6 @@ app.use(unknownEndpoint)
 
 
 
-const PORT = process.env.PORT || 80
+const PORT = process.env.PORT || 3001
 app.listen(PORT)
 console.log(`Server running on port ${PORT}`)
-console.log('I hope this works')
