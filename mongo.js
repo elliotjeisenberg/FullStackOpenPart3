@@ -1,32 +1,67 @@
 const mongoose = require('mongoose')
-mongoose.set("strictQuery", false);
+mongoose.set('strictQuery', false)
 
-if (process.argv.length < 3) {
-  console.log('Please provide the password as an argument: node mongo.js <password>')
-  process.exit(1)
+if (process.argv.length === 2) {
+        console.log('you must enter a password')
+        process.exit(1)
 }
 
 const password = process.argv[2]
+const isDisplayAll = process.argv.length === 3 ? true : false
+const url = `mongodb+srv://fullstackmongo:${password}@phonebook.fjndpdw.mongodb.net/?retryWrites=true&w=majority`
 
-const url = `mongodb+srv://fullstackmongo:${password}@cluster0.cry5xom.mongodb.net/?retryWrites=true&w=majority`
+const personSchema = new mongoose.Schema({
+        name: String,
+        number: String
+})
 
-mongoose
-  .connect(url)
-  .then((result) => {
-    const noteSchema = new mongoose.Schema({
-      content: String,
-      date: Date,
-      important: Boolean,
-    })
-    
-    const Note = mongoose.model('Note', noteSchema)
-    console.log('hello')
-    
-    Note.find().then(result => {
-        result.forEach(note => {
-          console.log(note)
+const Person = mongoose.model('Person', personSchema)
+
+const displayAllPersons = () => {
+        mongoose
+        .connect(url)
+        .then((res) => {
+                Person.find({}).then(result => {
+                        result.forEach(person => {
+                                console.log(person)
+                        })
+                        mongoose.connection.close()
+                })
         })
-        mongoose.connection.close()
-      })
+        .catch(err => {
+                console.log('did not connect', err)
+        })
+        
+}
 
-  }).catch((err) => console.log(err))
+const saveNewUser = () => {
+        const newPersonName = process.argv[3]
+        const newPersonNumber = process.argv[4]
+
+        mongoose
+        .connect(url)
+        .then((res) => {
+                const newPerson = Person({
+                        name: newPersonName,
+                        number: newPersonNumber
+                })
+
+                return newPerson.save()
+        })
+        .then(() => {
+                console.log('New Person Saved!')
+                mongoose.connection.close()
+        })
+        .catch(err => {
+                console.log(err)
+        })
+}
+
+
+if (isDisplayAll) {
+        console.log('Displaying the whole phonebook')
+        displayAllPersons()
+} else {
+        console.log('Adding a new entry')
+        saveNewUser()
+}

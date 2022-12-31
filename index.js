@@ -1,5 +1,6 @@
 const express = require('express')
 const morgan = require('morgan')
+const mongoose = require('mongoose')
 const cors = require('cors')
 const app = express()
 app.use(cors())
@@ -8,29 +9,14 @@ app.use(express.json())
 morgan.token('postdata', ((req, res) => { return JSON.stringify(req.body)}))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postdata'))
 
+const mongooseURL = `mongodb+srv://fullstackmongo:fullstackmongo@phonebook.fjndpdw.mongodb.net/?retryWrites=true&w=majority`
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String
+})
+const Person = mongoose.model('Person', personSchema)
 
-let persons = [
-    { 
-      "id": 1,
-      "name": "Arto Hellas", 
-      "number": "040-123456"
-    },
-    { 
-      "id": 2,
-      "name": "Ada Lovelace", 
-      "number": "39-44-5323523"
-    },
-    { 
-      "id": 3,
-      "name": "Dan Abramov", 
-      "number": "12-43-234345"
-    },
-    { 
-      "id": 4,
-      "name": "Mary Poppendieck", 
-      "number": "39-23-6423122"
-    }
-]
+mongoose.connect(mongooseURL)
 
 app.get('/info', (request, response) => {
   console.log('info was requested')
@@ -38,7 +24,10 @@ app.get('/info', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({})
+    .then(persons => {
+      response.json(persons)
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
