@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const mongoose = require('mongoose')
@@ -9,14 +10,7 @@ app.use(express.json())
 morgan.token('postdata', ((req, res) => { return JSON.stringify(req.body)}))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postdata'))
 
-const mongooseURL = `mongodb+srv://fullstackmongo:fullstackmongo@phonebook.fjndpdw.mongodb.net/?retryWrites=true&w=majority`
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String
-})
-const Person = mongoose.model('Person', personSchema)
-
-mongoose.connect(mongooseURL)
+const Person = require('./models/person')
 
 app.get('/info', (request, response) => {
   console.log('info was requested')
@@ -31,13 +25,14 @@ app.get('/api/persons', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(p => p.id === id)
-    if (person) {
+    const id = request.params.id
+    const person = Person.findById(id).then(person => {
+      if (person) {
         response.json(person)
     } else {
         response.status(404)
     }
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -53,23 +48,30 @@ app.put('/api/persons/:id', (request, response) => {
   response.json(persons[index])
 })
 
-const generateId = () => {
-  const maxId = persons.length > 0
-  ? Math.max(...persons.map(p => p.id))
-  :0
-  return maxId + 1
-}
+// const generateId = () => {
+//   const maxId = persons.length > 0
+//   ? Math.max(...persons.map(p => p.id))
+//   :0
+//   return maxId + 1
+// }
 
 app.post('/api/persons', (request, response) => {
 
   if (!request.body.name || !request.body.number) {
     return response.status(400).json({error: 'entry must have a name and number'})
-  } else if (persons.find(p => p.name === request.body.name)) {
-    return response.status(400).json({error:'name must be unique'})
-  } else {
-    const newPerson = {...request.body, id:generateId()}
-    persons = persons.concat(newPerson)
-    response.status(200).json(newPerson)
+  // } else if (persons.find(p => p.name === request.body.name)) {
+  //   return response.status(400).json({error:'name must be unique'})
+  } 
+  else {
+    const body = request.body
+    const person = new Person({
+      name: body.name,
+      number: body.number
+    })
+
+    person.save().then(savedPerson => {
+      response.json(savedPerson)
+    })
   }
 })
 
