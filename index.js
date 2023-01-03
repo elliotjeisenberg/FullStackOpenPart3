@@ -6,7 +6,7 @@ const cors = require('cors')
 const app = express()
 app.use(cors())
 app.use(express.json())
-app.use(express.static('build'))
+//app.use(express.static('build'))
 morgan.token('postdata', ((req, res) => { return JSON.stringify(req.body)}))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :postdata'))
 
@@ -55,7 +55,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     number: request.body.number
   }
 
-  Person.findByIdAndUpdate(request.params.id, updatedNumber, {new: true, runValidators: true})
+  Person.findByIdAndUpdate(request.params.id, updatedNumber, {new: true, runValidators: true, context: 'query'})
   .then(updatedPerson => {
     response.json(updatedPerson)
   })
@@ -81,11 +81,10 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
-  console.log(error.message)
   if (error.name === 'CastError') {
     return response.status(400).send({error: 'malformed id'})
   } else if (error.name === 'ValidationError') {
-    return response.status(400).send({error: error.message})
+    return response.status(400).send(error)
   }
   next(error)
 }
