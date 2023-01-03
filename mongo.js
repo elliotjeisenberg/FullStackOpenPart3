@@ -19,19 +19,18 @@ const Person = mongoose.model('Person', personSchema)
 
 const displayAllPersons = () => {
         mongoose
-        .connect(url)
-        .then((res) => {
-                Person.find({}).then(result => {
-                        result.forEach(person => {
-                                console.log(person)
+                .connect(url)
+                .then(() => {
+                        Person.find({}).then(result => {
+                                result.forEach(person => {
+                                        console.log(person)
+                                })
+                                mongoose.connection.close()
                         })
-                        mongoose.connection.close()
                 })
-        })
-        .catch(err => {
-                console.log('did not connect', err)
-        })
-        
+                .catch(err => {
+                        console.log('did not connect', err)
+                })
 }
 
 const saveNewUser = () => {
@@ -39,22 +38,22 @@ const saveNewUser = () => {
         const newPersonNumber = process.argv[4]
 
         mongoose
-        .connect(url)
-        .then((res) => {
-                const newPerson = Person({
-                        name: newPersonName,
-                        number: newPersonNumber
-                })
+                .connect(url)
+                .then(() => {
+                        const newPerson = Person({
+                                name: newPersonName,
+                                number: newPersonNumber
+                        })
 
-                return newPerson.save()
-        })
-        .then(() => {
-                console.log('New Person Saved!')
-                mongoose.connection.close()
-        })
-        .catch(err => {
-                console.log(err)
-        })
+                        return newPerson.save()
+                })
+                .then(() => {
+                        console.log('New Person Saved!')
+                        mongoose.connection.close()
+                })
+                .catch(err => {
+                        console.log(err)
+                })
 }
 
 
